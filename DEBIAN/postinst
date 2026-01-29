@@ -1,0 +1,49 @@
+#!/bin/bash
+# DEBIAN/postinst
+
+# 1. Detecta o usuário real (quem está na frente do PC)
+REAL_USER=$(logname || echo $SUDO_USER)
+USER_HOME=$(eval echo ~$REAL_USER)
+TARGET_DIR="$USER_HOME/Modelos/wolskill"
+
+# 2. Cria o diretório se não existir
+if [ ! -d "$TARGET_DIR" ]; then
+    mkdir -p "$TARGET_DIR"
+    chown -R $REAL_USER:$REAL_USER "$USER_HOME/Modelos"
+fi
+
+# 3. Instala dependências do sistema
+apt-get update && apt-get install -y python3-pip python3-requests python3-websocket python3-getmac zenity flatpak
+
+# 4. Abre interface para pegar os códigos (AWSID e LICENSE)
+# Nota: roda como o usuário real para aparecer na tela dele
+sudo -u $REAL_USER DISPLAY=:0 zenity --forms --title="Configuração Wolskill" \
+    --text="Insira suas credenciais do Wolskill" \
+    --add-entry="AWSID" \
+    --add-entry="LICENSE" > /tmp/wol_creds
+
+if [ $? -eq 0 ]; then
+    AWSID=$(cut -d'|' -f1 /tmp/wol_creds)
+    LICENSE=$(cut -d'|' -f2 /tmp/wol_creds)
+    
+    # Salva no TXT como você pediu
+    echo "AWSID=$AWSID" > "$TARGET_DIR/config.txt"
+    echo "LICENSE=$LICENSE" >> "$TARGET_DIR/config.txt"
+    chown $REAL_USER:$REAL_USER "$TARGET_DIR/config.txt"
+fi
+
+# 5. Cria o Autostart para o usuário
+AUTOSTART_DIR="$USER_HOME/.config/autostart"
+mkdir -p "$AUTOSTART_DIR"
+cat <<EOF > "$AUTOSTART_DIR/wolskill.desktop"
+[Desktop Entry]
+Type=Application
+Name=Wolskill
+Exec=python3 /usr/local/bin/wolskill.py
+Icon=network-transmit
+Terminal=false
+X-GNOME-Autostart-enabled=true
+EOF
+chown -R $REAL_USER:$REAL_USER "$AUTOSTART_DIR"
+
+exit 0

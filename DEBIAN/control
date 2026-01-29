@@ -1,0 +1,8 @@
+Package: wolskill-amauri
+Version: 1.0
+Section: utils
+Priority: optional
+Architecture: all
+Maintainer: Amauri Bueno <seuemail@exemplo.com>
+Description: Controle de dispositivos via Alexa para Debian 13.
+ Requer Python 3 e conexão com internet.
