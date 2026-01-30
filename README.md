@@ -64,8 +64,8 @@ Description=Monitor Wake-on-LAN e Trigger HTTP
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 /caminho/do/seu/script.py
-WorkingDirectory=/caminho/do/seu/
+ExecStart=/usr/bin/python3 /usr/local/bin/monitor_wol.py
+WorkingDirectory=/usr/local/bin/
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
